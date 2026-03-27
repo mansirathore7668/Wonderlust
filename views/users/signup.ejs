@@ -1,0 +1,96 @@
+<%layout("/layouts/boilerplate") %>
+
+<div class="wl-auth">
+  <div class="row g-0 wl-auth-shell">
+    <div class="col-lg-6 wl-auth-aside">
+      <div class="wl-auth-aside-inner">
+        <a class="wl-auth-brand" href="/" aria-label="Wonderlust home">
+          <i class="fa-solid fa-compass"></i>
+          <span>wonderlust</span>
+        </a>
+        <h2 class="wl-auth-title">Create your account</h2>
+        <p class="wl-auth-subtitle mb-0">Sign up to save favorites, review stays, and publish your first listing.</p>
+
+        <div class="wl-auth-badges mt-4">
+          <div class="wl-auth-badge"><i class="fa-solid fa-shield-halved"></i> Secure signup</div>
+          <div class="wl-auth-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Clean UI</div>
+          <div class="wl-auth-badge"><i class="fa-solid fa-bolt"></i> Quick start</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 wl-auth-main">
+      <div class="wl-auth-card">
+        <div class="wl-auth-card-top">
+          <h3 class="mb-1">Sign up</h3>
+          <p class="text-muted mb-0">Use a username, email, and password.</p>
+        </div>
+
+        <form action="/signup" method="POST" novalidate class="needs-validation mt-3">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="fa-regular fa-user"></i></span>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                name="username"
+                placeholder="Choose a username"
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+              />
+              <div class="invalid-feedback">Please choose a username</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="fa-regular fa-envelope"></i></span>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+              />
+              <div class="invalid-feedback">Please enter a valid email</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="fa-solid fa-lock"></i></span>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                placeholder="Create a password"
+                autocomplete="new-password"
+                required
+              />
+              <div class="invalid-feedback">Please create a password</div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-dark wl-auth-btn w-100">Create account</button>
+
+          <div class="wl-auth-foot mt-3">
+            <span class="text-muted">Already have an account?</span>
+            <a href="/login" class="wl-auth-link">Log in</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

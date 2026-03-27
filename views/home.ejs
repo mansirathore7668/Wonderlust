@@ -1,0 +1,94 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="home-hero mt-3">
+  <div class="home-hero-inner">
+    <div class="home-hero-copy">
+      <p class="home-kicker mb-2">Wonderlust</p>
+      <h1 class="home-title mb-3">Find your next stay, instantly.</h1>
+      <p class="home-subtitle mb-4">Homes, cabins, and unique places. Search by city, country, or listing name.</p>
+
+      <form class="home-search" method="GET" action="/listing" role="search" aria-label="Search listings">
+        <div class="input-group input-group-lg">
+          <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input
+            class="form-control"
+            type="search"
+            name="q"
+            placeholder="Try: Goa, Mumbai, Bali, Lake, Cabin..."
+            autocomplete="off"
+            aria-label="Search"
+          >
+          <button class="btn btn-dark" type="submit">Search</button>
+        </div>
+      </form>
+
+      <div class="home-pills mt-3">
+        <a class="home-pill" href="/listing?q=beach"><i class="fa-solid fa-umbrella-beach"></i> Beach</a>
+        <a class="home-pill" href="/listing?q=mountain"><i class="fa-solid fa-mountain"></i> Mountain</a>
+        <a class="home-pill" href="/listing?q=lake"><i class="fa-solid fa-water"></i> Lake</a>
+        <a class="home-pill" href="/listing?q=city"><i class="fa-solid fa-city"></i> City</a>
+      </div>
+    </div>
+
+    <div class="home-hero-art" aria-hidden="true">
+      <div class="home-mosaic">
+        <div class="home-tile t1"></div>
+        <div class="home-tile t2"></div>
+        <div class="home-tile t3"></div>
+        <div class="home-tile t4"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="home-section">
+  <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
+    <h2 class="h4 mb-0">Featured stays</h2>
+    <a class="btn btn-sm btn-outline-dark" href="/listing">Browse all</a>
+  </div>
+
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+    <% if (featured && featured.length) { %>
+      <% for (let listing of featured) { %>
+        <a href="/listing/<%= listing._id %>" class="listing-link">
+          <div class="card col listing-card home-card">
+            <img
+              src="<%= listing.image %>"
+              class="card-img-top"
+              alt="listing_image"
+              style="height: 18rem;"
+            />
+            <div class="card-img-overlay"></div>
+            <div class="card-body">
+              <p class="card-text">
+                <b><%= listing.title %></b>
+                <br/>
+                &#8377;<%= listing.price.toLocaleString("en-IN") %>/Night
+              </p>
+            </div>
+          </div>
+        </a>
+      <% } %>
+    <% } else { %>
+      <p class="text-muted mt-3">No listings yet. Create your first one.</p>
+      <a class="btn btn-dark w-auto" href="/listing/new">Add new listing</a>
+    <% } %>
+  </div>
+</section>
+
+<section class="home-section home-cta">
+  <div class="row g-3 align-items-center">
+    <div class="col-lg-8">
+      <h2 class="h4 mb-2">List a place on Wonderlust</h2>
+      <p class="text-muted mb-0">Share your space and reach travelers looking for something special.</p>
+    </div>
+    <div class="col-lg-4 text-lg-end">
+      <a class="btn btn-dark" href="/listing/new">Become a host</a>
+   
+    </div>
+  </div>
+
+</section>
+
+ </br>
+  </br>

@@ -1,0 +1,57 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="wl-bookings">
+  <div class="wl-bookings-hero">
+    <div>
+      <div class="wl-bookings-kicker">Your trips</div>
+      <h2 class="wl-bookings-title">Bookings</h2>
+      <p class="wl-bookings-sub">Manage upcoming stays and past reservations.</p>
+    </div>
+    <a href="/listing" class="btn btn-dark">Explore listings</a>
+  </div>
+
+  <% if (!bookings.length) { %>
+    <div class="wl-empty mt-4">
+      <div class="wl-empty-icon"><i class="fa-regular fa-calendar"></i></div>
+      <h5>No bookings yet</h5>
+      <p class="text-muted mb-0">Pick a destination and reserve your first stay.</p>
+    </div>
+  <% } else { %>
+    <div class="wl-booking-grid mt-4">
+      <% bookings.forEach((booking) => { %>
+        <div class="wl-booking-item">
+          <div class="wl-booking-item-media">
+            <img src="<%= booking.listing ? booking.listing.image : '' %>" alt="Listing image">
+          </div>
+          <div class="wl-booking-item-body">
+            <div class="wl-booking-item-title">
+              <%= booking.listing ? booking.listing.title : 'Listing unavailable' %>
+            </div>
+            <div class="wl-booking-item-meta">
+              <span><i class="fa-solid fa-location-dot me-1"></i><%= booking.listing ? booking.listing.location : 'Unknown' %></span>
+              <span class="wl-dot">&bull;</span>
+              <span><%= booking.guests %> guest<%= booking.guests > 1 ? 's' : '' %></span>
+            </div>
+            <div class="wl-booking-item-dates">
+              <span><%= booking.checkIn.toDateString() %></span>
+              <span class="wl-dot">&bull;</span>
+              <span><%= booking.checkOut.toDateString() %></span>
+            </div>
+            <div class="wl-booking-item-foot">
+              <span class="wl-booking-status <%= booking.status === 'cancelled' ? 'is-cancelled' : '' %>">
+                <%= booking.status %>
+              </span>
+              <span class="fw-semibold">&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %></span>
+            </div>
+            <% if (booking.status !== "cancelled") { %>
+              <form method="POST" action="/bookings/<%= booking._id %>?_method=DELETE" class="mt-3">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="btn btn-outline-dark btn-sm" type="submit">Cancel booking</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>

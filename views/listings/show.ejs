@@ -1,0 +1,233 @@
+<% layout("/layouts/boilerplate") %>
+
+  <body>
+    <div class="wl-show">
+      <div class="wl-show-top">
+        <a class="wl-back" href="/listing">
+          <i class="fa-solid fa-arrow-left me-2"></i>Back to explore
+        </a>
+
+        <div class="wl-show-title-row">
+          <h2 class="wl-show-title">
+            <%= listings.title %>
+          </h2>
+          <% if (categoryMeta) { %>
+            <span class="wl-show-pill">
+              <i class="fa-solid <%= categoryMeta.icon %> me-1"></i><%= categoryMeta.label %>
+            </span>
+          <% } %>
+        </div>
+
+        <div class="wl-show-sub">
+          <i class="fa-solid fa-location-dot me-1"></i>
+          <span><%= listings.location %>, <%= listings.country %></span>
+          <span class="wl-dot">&bull;</span>
+          <span class="text-muted">Hosted by <span class="fw-semibold text-dark"><%= listings.owner ? listings.owner.username : "Unknown owner" %></span></span>
+        </div>
+
+        <div class="wl-show-meta mt-3">
+          <span class="wl-show-chip">
+            <i class="fa-solid fa-indian-rupee-sign me-1"></i>
+            <span class="fw-semibold">&#8377;<%= listings.price.toLocaleString("en-IN") %></span> / night
+          </span>
+          <span class="wl-show-chip">
+            <i class="fa-solid fa-star me-1"></i>
+            <span class="fw-semibold"><%= listings.reviews.length %></span> reviews
+          </span>
+          <% if (categoryMeta) { %>
+            <span class="wl-show-chip">
+              <i class="fa-solid <%= categoryMeta.icon %> me-1"></i>
+              <span class="fw-semibold"><%= categoryMeta.label %></span>
+            </span>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="wl-show-grid">
+        <section class="wl-show-main">
+          <div class="wl-show-gallery">
+            <div class="wl-show-gallery-main">
+              <img src="<%= listings.image %>" alt="<%= listings.title %> main image" />
+            </div>
+            <div class="wl-show-gallery-stack">
+              <img src="<%= listings.image %>" alt="<%= listings.title %> detail image 1" />
+              <img src="<%= listings.image %>" alt="<%= listings.title %> detail image 2" />
+            </div>
+          </div>
+
+          <div class="wl-show-card">
+            <h4 class="mb-2">About this place</h4>
+            <p class="wl-show-desc mb-0"><%= listings.description %></p>
+          </div>
+
+          <div class="wl-show-card">
+            <h4 class="mb-2">Where you'll be</h4>
+            <div
+              id="listing-map"
+              class="wonderlust-map"
+              data-location="<%= `${listings.location}, ${listings.country}` %>"
+              data-title="<%= listings.title %>"
+              aria-label="Listing location map"
+            ></div>
+            <small id="listing-map-status" class="text-muted d-block mt-2"></small>
+          </div>
+          <script src="/js/listingMap.js"></script>
+
+          <div class="wl-show-card">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <h4 class="mb-0">Reviews</h4>
+              <span class="text-muted"><%= listings.reviews.length %> total</span>
+            </div>
+
+            <% if(currUser) {%>
+              <div class="wl-review-form mt-3">
+                <h5 class="mb-2">Leave a review</h5>
+                <form action="/listing/<%=listings._id %>/review" method="POST" novalidate class="needs-validation">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <div class="mb-3">
+                    <label class="form-level d-block mb-2">Rating</label>
+                    <div class="airbnb-rating-input">
+                      <input type="radio" id="star5" name="review[rating]" value="5" required>
+                      <label for="star5" title="5 stars">&#9733;</label>
+                      <input type="radio" id="star4" name="review[rating]" value="4">
+                      <label for="star4" title="4 stars">&#9733;</label>
+                      <input type="radio" id="star3" name="review[rating]" value="3">
+                      <label for="star3" title="4 stars">&#9733;</label>
+                      <input type="radio" id="star2" name="review[rating]" value="2">
+                      <label for="star2" title="2 stars">&#9733;</label>
+                      <input type="radio" id="star1" name="review[rating]" value="1">
+                      <label for="star1" title="1 star">&#9733;</label>
+                    </div>
+                    <div class="invalid-feedback">Please select a rating</div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="comment" class="form-level">Comment</label>
+                    <textarea name="review[comment]" id="comment" rows="4" class="form-control" required></textarea>
+                    <div class="invalid-feedback">Please add some comment for review</div>
+                  </div>
+                  <button class="btn btn-dark" type="submit">Submit</button>
+                </form>
+              </div>
+            <% } %>
+
+            <hr class="my-4">
+
+            <% if (!listings.reviews.length) { %>
+              <p class="text-muted mb-0">No reviews yet. Be the first to review this place.</p>
+            <% } else { %>
+              <div class="wl-review-grid mt-3">
+                <% for(let review of listings.reviews){ %>
+                  <div class="wl-review">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                      <div class="wl-review-author">@<%= review.author ? review.author.username : "unknown" %></div>
+                      <div class="wl-review-stars">
+                        <span class="airbnb-stars">
+                          <% for(let i = 1; i <= 5; i++) { %>
+                            <span class="<%= i <= review.rating ? 'filled' : '' %>">&#9733;</span>
+                          <% } %>
+                        </span>
+                        <span class="airbnb-rating-value"><%= review.rating %>.0</span>
+                      </div>
+                    </div>
+                    <div class="wl-review-text mt-2"><%= review.comment %></div>
+
+                    <% if(currUser && review.author && review.author._id.equals(currUser._id)) { %>
+                      <form class="mt-3 mb-0" method="POST" action="/listing/<%= listings._id %>/<%= review._id %>?_method=DELETE">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button class="btn btn-sm btn-outline-dark" type="submit">Delete</button>
+                      </form>
+                    <% } %>
+                  </div>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+        </section>
+
+        <aside class="wl-show-side">
+          <div class="wl-price-card">
+            <div class="wl-price-top">
+              <div>
+                <div class="wl-price-amt">&#8377;<%= listings.price.toLocaleString("en-IN") %></div>
+                <div class="wl-price-unit">per night</div>
+              </div>
+              <% if (categoryMeta) { %>
+                <div class="wl-price-badge">
+                  <i class="fa-solid <%= categoryMeta.icon %> me-1"></i><%= categoryMeta.label %>
+                </div>
+              <% } %>
+            </div>
+
+            <div class="wl-price-meta mt-3">
+              <div class="wl-meta-row">
+                <span class="text-muted">Location</span>
+                <span class="fw-semibold text-end"><%= listings.location %></span>
+              </div>
+              <div class="wl-meta-row">
+                <span class="text-muted">Country</span>
+                <span class="fw-semibold text-end"><%= listings.country %></span>
+              </div>
+            </div>
+
+            <% if(currUser && listings.owner && listings.owner._id.equals(currUser._id)) {%>
+              <div class="d-grid gap-2 mt-3">
+                <a href="/listing/<%= listings._id %>/edit" class="btn btn-dark">Edit listing</a>
+                <form method="POST" action="/listing/<%=listings.id%>?_method=DELETE">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn-outline-dark" type="submit">Delete listing</button>
+                </form>
+              </div>
+            <% } else { %>
+              <div class="wl-booking-card mt-3">
+                <div class="wl-booking-header">
+                  <div>
+                    <div class="wl-booking-title">Reserve your stay</div>
+                    <div class="wl-booking-sub">Best price for <%= listings.title %></div>
+                  </div>
+                  <span class="wl-booking-pill">Instant confirm</span>
+                </div>
+
+                <% if(currUser){ %>
+                  <form method="POST" action="/listing/<%= listings._id %>/bookings" class="wl-booking-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="wl-booking-date-grid">
+                      <div>
+                        <label class="form-label">Check-in</label>
+                        <input type="date" name="booking[checkIn]" class="form-control" required>
+                      </div>
+                      <div>
+                        <label class="form-label">Check-out</label>
+                        <input type="date" name="booking[checkOut]" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <label class="form-label">Guests</label>
+                      <select name="booking[guests]" class="form-select" required>
+                        <% for(let g = 1; g <= 6; g++) { %>
+                          <option value="<%= g %>"><%= g %> guest<%= g > 1 ? 's' : '' %></option>
+                        <% } %>
+                      </select>
+                    </div>
+                    <div class="wl-booking-summary mt-3">
+                      <span>Price per night</span>
+                      <span class="fw-semibold">&#8377;<%= listings.price.toLocaleString("en-IN") %></span>
+                    </div>
+                    <button class="btn btn-dark w-100 mt-3" type="submit">Confirm booking</button>
+                    <div class="wl-booking-note mt-2">You will not be charged yet.</div>
+                  </form>
+                <% } else { %>
+                  <div class="wl-booking-guest">
+                    <p class="mb-2">Log in to reserve this listing.</p>
+                    <a href="/login" class="btn btn-dark w-100">Log in to book</a>
+                  </div>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+
+  

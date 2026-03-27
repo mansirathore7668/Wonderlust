@@ -1,0 +1,249 @@
+<%layout("/layouts/boilerplate") %>
+
+        <main class="wl-listings-page">
+        <form method="GET" action="/listing" role="search" aria-label="Search and filter listings" class="mt-3">
+          <%
+            const categoryByKey = new Map((categories || []).map((cat) => [cat.key, cat]));
+            const buildHref = (overrides = {}) => {
+              const params = new URLSearchParams();
+              if (q) params.set("q", q);
+              if (filters && filters.minPrice !== "") params.set("minPrice", String(filters.minPrice));
+              if (filters && filters.maxPrice !== "") params.set("maxPrice", String(filters.maxPrice));
+              if (filters && filters.location) params.set("location", filters.location);
+              if (filters && filters.country) params.set("country", filters.country);
+              if (filters && filters.sort && filters.sort !== "relevance") params.set("sort", filters.sort);
+              if (filters && filters.category) params.set("category", filters.category);
+
+              for (const [key, value] of Object.entries(overrides)) {
+                if (value === "" || value === null || value === undefined) params.delete(key);
+                else params.set(key, String(value));
+              }
+              const qs = params.toString();
+              return qs ? `/listing?${qs}` : "/listing";
+            };
+          %>
+          <input type="hidden" name="category" value="<%= filters?.category ?? '' %>">
+          <input type="hidden" name="page" value="1">
+          <section class="wl-explore-hero">
+            <div class="wl-explore-hero-inner">
+              <div>
+                <p class="wl-explore-kicker mb-2">Explore stays</p>
+                <h2 class="wl-explore-title mb-2">Find your next place</h2>
+                <p class="wl-explore-subtitle mb-0">Browse homes across categories and discover great destinations.</p>
+              </div>
+
+              <div class="wl-explore-actions">
+                <div class="wl-explore-search">
+                  <i class="fa-solid fa-magnifying-glass wl-explore-search-icon" aria-hidden="true"></i>
+                  <input
+                    class="wl-explore-search-input"
+                    type="search"
+                    name="q"
+                    value="<%= q || '' %>"
+                    placeholder="Search by city, country, title"
+                    aria-label="Search"
+                  >
+                  <button class="wl-explore-search-btn" type="submit">Search</button>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                  <button class="btn btn-outline-dark wl-filter-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#listingFilters" aria-controls="listingFilters">
+                    <i class="fa-solid fa-sliders me-1"></i>
+                    Filters
+                    <% if (activeFiltersCount) { %>
+                      <span class="badge text-bg-dark ms-1"><%= activeFiltersCount %></span>
+                    <% } %>
+                  </button>
+
+                  <% if (q || activeFiltersCount) { %>
+                    <a class="btn btn-outline-secondary" href="/listing">Clear</a>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <nav class="wl-category-wrap mb-3" aria-label="Browse categories">
+            <div class="wl-category-bar">
+              <a class="wl-category <%= !filters?.category ? 'active' : '' %>" href="<%= buildHref({ category: '' }) %>" aria-current="<%= !filters?.category ? 'page' : undefined %>">
+                <span class="wl-category-icon"><i class="fa-solid fa-border-all"></i></span>
+                <span class="wl-category-label">All</span>
+              </a>
+
+              <% (categories || []).forEach((cat) => { %>
+                <a class="wl-category <%= filters?.category === cat.key ? 'active' : '' %>" href="<%= buildHref({ category: cat.key }) %>" aria-current="<%= filters?.category === cat.key ? 'page' : undefined %>">
+                  <span class="wl-category-icon"><i class="fa-solid <%= cat.icon %>"></i></span>
+                  <span class="wl-category-label"><%= cat.label %></span>
+                </a>
+              <% }) %>
+            </div>
+          </nav>
+
+          <section class="wl-results-bar mb-3" aria-label="Search results">
+            <div class="text-muted" aria-live="polite">
+              <span class="fw-semibold text-dark"><%= totalCount %></span>
+              <%= totalCount === 1 ? "stay" : "stays" %>
+              <% if (totalCount) { %>
+                <span class="ms-2">Showing <span class="fw-semibold text-dark"><%= startIndex %>–<%= endIndex %></span></span>
+              <% } %>
+              <% if (filters?.category) { %>
+                <% const activeCat = categoryByKey.get(filters.category); %>
+                <% if (activeCat) { %>
+                  <span class="ms-2 badge rounded-pill text-bg-light border">
+                    <i class="fa-solid <%= activeCat.icon %> me-1"></i><%= activeCat.label %>
+                  </span>
+                <% } %>
+              <% } %>
+              <% if (q) { %>
+                <span class="ms-2">for "<span class="fw-semibold"><%= q %></span>"</span>
+              <% } %>
+            </div>
+
+            <div class="wl-results-actions d-none d-md-flex">
+              <div class="input-group input-group-sm wl-sort-group" role="group" aria-label="Sort results">
+                <span class="input-group-text">Sort</span>
+                <select class="form-select form-select-sm" name="sort" aria-label="Sort listings">
+                  <option value="relevance" <%= (filters?.sort || 'relevance') === 'relevance' ? 'selected' : '' %>>Recommended</option>
+                  <option value="newest" <%= filters?.sort === 'newest' ? 'selected' : '' %>>Newest</option>
+                  <option value="price_asc" <%= filters?.sort === 'price_asc' ? 'selected' : '' %>>Price: low to high</option>
+                  <option value="price_desc" <%= filters?.sort === 'price_desc' ? 'selected' : '' %>>Price: high to low</option>
+                </select>
+                <button class="btn btn-dark" type="submit">Apply</button>
+              </div>
+            </div>
+          </section>
+
+          <div class="offcanvas offcanvas-end" tabindex="-1" id="listingFilters" aria-labelledby="listingFiltersLabel">
+            <div class="offcanvas-header">
+              <h5 class="offcanvas-title" id="listingFiltersLabel">Filters</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+              <div class="wl-filter-section">
+                <h6 class="fw-bold mb-2">Price per night (&#8377;)</h6>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <label class="form-label mb-1" for="minPrice">Min</label>
+                    <input class="form-control" id="minPrice" name="minPrice" type="number" min="0" inputmode="numeric" value="<%= filters?.minPrice ?? '' %>" placeholder="0">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label mb-1" for="maxPrice">Max</label>
+                    <input class="form-control" id="maxPrice" name="maxPrice" type="number" min="0" inputmode="numeric" value="<%= filters?.maxPrice ?? '' %>" placeholder="5000">
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-3">
+
+              <div class="wl-filter-section">
+                <h6 class="fw-bold mb-2">Location</h6>
+                <div class="row g-2">
+                  <div class="col-12">
+                    <label class="form-label mb-1" for="location">City / State</label>
+                    <input class="form-control" id="location" name="location" type="text" value="<%= filters?.location ?? '' %>" placeholder="e.g., Goa">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label mb-1" for="country">Country</label>
+                    <input class="form-control" id="country" name="country" type="text" value="<%= filters?.country ?? '' %>" placeholder="e.g., India">
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-3 d-md-none">
+
+              <div class="wl-filter-section d-md-none">
+                <h6 class="fw-bold mb-2">Sort</h6>
+                <select class="form-select" name="sort" aria-label="Sort listings">
+                  <option value="relevance" <%= (filters?.sort || 'relevance') === 'relevance' ? 'selected' : '' %>>Recommended</option>
+                  <option value="newest" <%= filters?.sort === 'newest' ? 'selected' : '' %>>Newest</option>
+                  <option value="price_asc" <%= filters?.sort === 'price_asc' ? 'selected' : '' %>>Price: low to high</option>
+                  <option value="price_desc" <%= filters?.sort === 'price_desc' ? 'selected' : '' %>>Price: high to low</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="offcanvas-footer p-3 border-top d-flex gap-2">
+              <a class="btn btn-outline-secondary w-100" href="/listing">Reset</a>
+              <button class="btn btn-dark w-100" type="submit">Show results</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- <form method="GET" action="/listing/new">
+        <button> Add new listing</button>
+    </form> -->
+
+    <% if (!allListing.length) { %>
+      <div class="wl-empty">
+        <div class="wl-empty-icon"><i class="fa-regular fa-face-frown"></i></div>
+        <h4 class="mb-1">No stays found</h4>
+        <p class="text-muted mb-3">Try changing category, clearing filters, or searching a different place.</p>
+        <a class="btn btn-outline-dark" href="/listing">Clear all</a>
+      </div>
+    <% } else { %>
+      <div class="wl-grid">
+        <% for (let listing of allListing){ %>
+          <% const meta = listing.category ? categoryByKey.get(listing.category) : null; %>
+          <a href="/listing/<%=listing._id %>" class="wl-card-link">
+            <article class="wl-card">
+              <div class="wl-card-media">
+                <img src="<%=listing.image %>" alt="<%= listing.title %> image" loading="lazy" />
+                <% if (meta) { %>
+                  <span class="wl-card-pill">
+                    <i class="fa-solid <%= meta.icon %> me-1"></i><%= meta.label %>
+                  </span>
+                <% } %>
+              </div>
+              <div class="wl-card-body">
+                <div class="wl-card-title"><%=listing.title %></div>
+                <div class="wl-card-sub">
+                  <i class="fa-solid fa-location-dot me-1"></i>
+                  <%= listing.location %>, <%= listing.country %>
+                </div>
+                <div class="wl-card-price">
+                  <% if (typeof listing.price === "number") { %>
+                    <span class="wl-card-price-amt">&#8377;<%=listing.price.toLocaleString("en-IN") %></span>
+                    <span class="wl-card-price-unit"> / night</span>
+                  <% } else { %>
+                    <span class="text-muted">Price on request</span>
+                  <% } %>
+                </div>
+              </div>
+            </article>
+          </a>
+        <% } %>
+      </div>
+    <% } %>
+
+    <% if (pagination && pagination.totalPages > 1) { %>
+      <nav class="wl-pagination mt-4" aria-label="Results pages">
+        <ul class="pagination justify-content-center flex-wrap gap-2 mb-0">
+          <li class="page-item <%= pagination.hasPrev ? '' : 'disabled' %>">
+            <a class="page-link" href="<%= buildHref({ page: pagination.prevPage }) %>" aria-label="Previous page">Prev</a>
+          </li>
+
+          <%
+            let lastPage = 0;
+            (pagination.pages || []).forEach((p) => {
+              if (p - lastPage > 1) {
+          %>
+                <li class="page-item disabled" aria-hidden="true"><span class="page-link">…</span></li>
+          <%
+              }
+              const isActive = p === pagination.page;
+          %>
+              <li class="page-item <%= isActive ? 'active' : '' %>">
+                <a class="page-link" href="<%= buildHref({ page: p }) %>" aria-current="<%= isActive ? 'page' : undefined %>"><%= p %></a>
+              </li>
+          <%
+              lastPage = p;
+            });
+          %>
+
+          <li class="page-item <%= pagination.hasNext ? '' : 'disabled' %>">
+            <a class="page-link" href="<%= buildHref({ page: pagination.nextPage }) %>" aria-label="Next page">Next</a>
+          </li>
+        </ul>
+      </nav>
+    <% } %>
+    </main>
