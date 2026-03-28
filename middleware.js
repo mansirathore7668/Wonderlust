@@ -41,7 +41,8 @@ const islogedin = (req, res, next) => {
 
 const saveRedirectUrl = (req, res, next) => {
     if (req.session.redirectUrl) {
-        res.locals.redirectUrl = req.session.redirectUrl;
+        req.session.returnTo = req.session.redirectUrl;
+        res.locals.redirectUrl = req.session.returnTo;
         delete req.session.redirectUrl;
     }
     next();

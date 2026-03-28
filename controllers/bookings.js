@@ -69,7 +69,7 @@ module.exports.listBookings = async (req, res) => {
     .populate("listing")
     .sort({ createdAt: -1 });
 
-  res.render("bookings/index", { bookings });
+  res.render("bookings/index", { bookings, csrfToken: req.csrfToken() });
 };
 
 module.exports.cancelBooking = async (req, res) => {

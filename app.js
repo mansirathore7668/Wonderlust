@@ -11,9 +11,7 @@ const session=require("express-session");
 const MongoStore = require('connect-mongo');
 const helmet = require("helmet");
 const csrf = require("csurf");
-const MongoStore = require("connect-mongo");
 const passport =require("passport");
-const localStrategy = require("passport-local");
 const user = require("./models/user.js");
 const Listing = require("./models/listing.js");
 
@@ -25,6 +23,8 @@ const userBookingRouter = require("./routers/userBookings.js");
 
 const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/wonderlust";
 const isProduction = process.env.NODE_ENV === "production";
+const SESSION_SECRET = process.env.SESSION_SECRET || "dev-session-secret";
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 if (process.env.NODE_ENV !== "test") {
     main()
@@ -71,6 +71,8 @@ app.use(
                     "'self'",
                     "https://api.mapbox.com",
                     "https://nominatim.openstreetmap.org",
+                    "https://cdn.jsdelivr.net",
+                    "https://unpkg.com",
                 ],
                 frameAncestors: ["'none'"],
                 objectSrc: ["'none'"],
@@ -122,31 +124,25 @@ const sessionStore = canUseMongoStore
     ? MongoStore.create({
         mongoUrl: MONGO_URL,
         touchAfter: 24 * 3600,
-         crypto:{
-        secret:"mysupersecretcode"
-    },
+        // Disable session encryption to avoid legacy ciphertext parse errors.
     })
     : undefined;
 
-
-    // const store = MongoStore.create({
-    // mongoUrl:MONGO_URL,
-   
-    // touchAfter:24*3600,
-//});
-store.on("error",()=>{
-    console.log("Error in MONGO SESSION STORE",err);
-});
+if (sessionStore) {
+    sessionStore.on("error", (err) => {
+        console.log("Error in MONGO SESSION STORE", err);
+    });
+}
 
 const sessionOptions ={
-    store,
-    secret: process.env.SESSION_SECRET || "mysupersecretcode",
+    name: "wl.sid",
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
     cookie:{
-        expires:Date.now()+7*24*60*60*1000,
-        maxAge:7*24*60*60*1000,
+        expires: new Date(Date.now() + SESSION_TTL_MS),
+        maxAge: SESSION_TTL_MS,
         httpOnly:true,
         sameSite: "lax",
         secure: isProduction,
@@ -159,16 +155,18 @@ app.use(session(sessionOptions));
 app.use(flash());
 app.use(csrf());
 
-app.use(passport.initialize());
-app.use(passport.session());
-passport.use(new localStrategy(user.authenticate()));
+passport.use(user.createStrategy());
 
 passport.serializeUser(user.serializeUser());
 passport.deserializeUser(user.deserializeUser());
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.use((req,res,next)=>{
-    res.locals.success=req.flash("success");
+    res.locals.successMessage = req.query?.welcome === "1" ? "Welcome to wonderlust" : "";
+    res.locals.success = req.flash("success");
     res.locals.error=req.flash("error");
     res.locals.currUser=req.user;
     res.locals.mapboxToken = process.env.MAPBOX_TOKEN || "";
@@ -220,7 +218,7 @@ app.use((err,req,res,next)=>{
     if (res.headersSent) {
         return next(err);
     }
-    let{statusCode=500,message="somthing went wrong!"}=err;
+    let{statusCode=500,message="Something went wrong!"}=err;
 
     if (err.name === "MulterError") {
         statusCode = 400;

@@ -26,7 +26,7 @@
           <p class="text-muted mb-0">Use your username and password.</p>
         </div>
 
-        <form action="/login" method="POST" novalidate class="needs-validation mt-3">
+        <form action="/login" method="POST" novalidate class="needs-validation mt-3" data-disable-validation="true">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="mb-3">
             <label for="username" class="form-label">Username</label>

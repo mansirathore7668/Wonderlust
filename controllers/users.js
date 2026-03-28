@@ -2,7 +2,7 @@ const passport = require("passport");
 const User = require("../models/user");
 
 module.exports.renderSignupForm = (req, res) => {
-    res.render("users/signup.ejs");
+    res.render("users/signup.ejs", { csrfToken: req.csrfToken() });
 };
 
 module.exports.signup = async (req, res, next) => {
@@ -18,8 +18,12 @@ module.exports.signup = async (req, res, next) => {
             if (err) {
                 return next(err);
             }
-            req.flash("success", "welcome to wonderlust");
-            res.redirect("/listing");
+            req.session.save((saveErr) => {
+                if (saveErr) {
+                    return next(saveErr);
+                }
+                res.redirect("/listing?welcome=1");
+            });
         });
     } catch (e) {
         req.flash("error", e.message);
@@ -28,12 +32,18 @@ module.exports.signup = async (req, res, next) => {
 };
 
 module.exports.renderLoginForm = (req, res) => {
-    res.render("users/login.ejs");
+    res.render("users/login.ejs", { csrfToken: req.csrfToken() });
 };
 
-module.exports.login = async (req, res) => {
-    req.flash("success", "Welcome back to wonderlust");
-    res.redirect(res.locals.redirectUrl || "/listing");
+module.exports.login = async (req, res, next) => {
+    const target = res.locals.redirectUrl || "/listing";
+    const redirectUrl = target.includes("?") ? `${target}&welcome=1` : `${target}?welcome=1`;
+    req.session.save((err) => {
+        if (err) {
+            return next(err);
+        }
+        res.redirect(redirectUrl);
+    });
 };
 
 module.exports.logout = (req, res, next) => {
@@ -41,8 +51,13 @@ module.exports.logout = (req, res, next) => {
         if (err) {
             return next(err);
         }
-        req.flash("success", "you are loged out");
-        res.redirect("/listing");
+        req.session.destroy((sessionErr) => {
+            if (sessionErr) {
+                return next(sessionErr);
+            }
+            res.clearCookie("wl.sid");
+            res.redirect("/listing");
+        });
     });
 };
 

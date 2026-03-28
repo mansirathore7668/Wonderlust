@@ -35,9 +35,21 @@
       </form>
 
       <ul class="navbar-nav ms-lg-auto align-items-lg-center gap-lg-2">
-        <li class="nav-item">
-          <a class="nav-link wl-link-pill" href="/listing/new">Become a host</a>
-        </li>
+        <% if (currUser) { %>
+          <li class="nav-item d-none d-lg-block">
+            <a class="nav-link wl-link-pill" href="/listing/new">Create listing</a>
+          </li>
+          <li class="nav-item d-none d-lg-block">
+            <a class="nav-link wl-link-pill" href="/logout">Log out</a>
+          </li>
+        <% } else { %>
+          <li class="nav-item d-none d-lg-block">
+            <a class="nav-link wl-link-pill" href="/login">Log in</a>
+          </li>
+          <li class="nav-item d-none d-lg-block">
+            <a class="nav-link wl-link-pill" href="/signup">Sign up</a>
+          </li>
+        <% } %>
         <li class="nav-item">
           <button class="btn wl-icon-btn" type="button" aria-label="Language">
             <i class="fa-solid fa-globe"></i>
@@ -57,12 +69,13 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end wl-dropdown">
             <li><a class="dropdown-item" href="/listing">Explore</a></li>
-            <li><a class="dropdown-item" href="/listing/new">Create listing</a></li>
-            <li><hr class="dropdown-divider"></li>
             <% if(!currUser){ %>
+              <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="/signup">Sign up</a></li>
               <li><a class="dropdown-item" href="/login">Log in</a></li>
             <% } else { %>
+              <li><a class="dropdown-item" href="/listing/new">Create listing</a></li>
+              <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="/bookings">My bookings</a></li>
               <li><a class="dropdown-item" href="/logout">Log out</a></li>
             <% } %>

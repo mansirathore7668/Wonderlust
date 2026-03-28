@@ -1,19 +1,17 @@
 <%layout("/layouts/boilerplate") %>
 
-<body>
-    
     <div class="row" >
         <div class="col-8 offset-2 ">
              <br/><br/>
-            <h3> Create a new listing</h3>
+            <h3>Create a new listing</h3>
            
     <form method="POST" action="/listing?_csrf=<%= csrfToken %>" enctype="multipart/form-data" novalidate class="needs-validation">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="mb-3">
-        <label for="title" class="form-level">Title</label>
+        <label for="title" class="form-label">Title</label>
     <input
      name="listing[title]" 
-    placeholder="Add a catcy title"
+    placeholder="Add a catchy title"
      type="text"
      class="form-control"
      required
@@ -22,7 +20,7 @@
     </div>
 
     <div class="mb-3">
-        <label for="category" class="form-level">Category</label>
+        <label for="category" class="form-label">Category</label>
         <select id="category" name="listing[category]" class="form-select" required>
           <% (categories || []).forEach((cat) => { %>
             <option value="<%= cat.key %>" <%= cat.key === 'trending' ? 'selected' : '' %>><%= cat.label %></option>
@@ -30,9 +28,9 @@
         </select>
         <div class="invalid-feedback">Please choose a category</div>
     </div>
-    
+     
      <div class="mb-3">
-        <label for="Description" class="form-level">Description</label>
+        <label for="Description" class="form-label">Description</label>
         <textarea 
         name="listing[description]"
          placeholder="Description"
@@ -45,7 +43,7 @@
 
     
        <div class="mb-3">
-         <label for="Image" class="form-level">Image</label>
+         <label for="Image" class="form-label">Image</label>
          <input
          name="image"
          type="file"
@@ -56,9 +54,10 @@
 
         <div class="row">
        <div class="mb-3 col-md-3">
-             <label for="price" class="form-level">Price</label>
+             <label for="price" class="form-label">Price</label>
              <input name="listing[price]"
               placeholder="1200"               
+              type="number"
                class="form-control"
                required/>
                <div class="invalid-feedback">Price should be valid</div>
@@ -66,9 +65,9 @@
 
     
        <div class="mb-3 col-md-9">
-        <label for="Location" class="form-level">Location</label>
+        <label for="Location" class="form-label">Location</label>
         <input name="listing[location]" 
-        placeholder="Jaypur,Rajisthan"
+        placeholder="Jaipur, Rajasthan"
          type="text"  
           class="form-control"
            required />
@@ -79,7 +78,7 @@
     
 
     <div class="mb-3">
-         <label for="Country" class="form-level">Country</label>
+         <label for="Country" class="form-label">Country</label>
      <input name="listing[country]"
       placeholder="India" 
       type="text" 
@@ -100,7 +99,4 @@
     </form>
     </div>
     </div>
-
-
-</body>
 

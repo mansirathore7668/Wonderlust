@@ -131,7 +131,7 @@ module.exports.index = async (req, res) => {
 };
 
 module.exports.renderNewForm = (req, res) => {
-    res.render("listings/new.ejs", { categories: CATEGORY_OPTIONS });
+    res.render("listings/new.ejs", { categories: CATEGORY_OPTIONS, csrfToken: req.csrfToken() });
 };
 
 module.exports.showListing = async (req, res) => {
@@ -144,15 +144,20 @@ module.exports.showListing = async (req, res) => {
         .populate("owner");
 
     if (!listings) {
-        req.flash("error", " Listing you requested for does not exist!");
+        req.flash("error", "Listing you requested does not exist.");
         return res.redirect("/listing");
     }
 
     const categoryMeta = CATEGORY_OPTIONS.find((cat) => cat.key === listings.category) || null;
-    res.render("listings/show.ejs", { listings, categoryMeta });
+    res.render("listings/show.ejs", { listings, categoryMeta, csrfToken: req.csrfToken() });
 };
 
 module.exports.createListing = async (req, res) => {
+    if (!req.user) {
+        req.flash("error", "You must be logged in first.");
+        return res.redirect("/login");
+    }
+
     const newlisting = new Listing(req.body.listing);
     newlisting.owner = req.user._id;
 
@@ -179,11 +184,11 @@ module.exports.renderEditForm = async (req, res) => {
     const listings = await Listing.findById(id);
 
     if (!listings) {
-        req.flash("error", " Listing you requested for does not exist!");
+        req.flash("error", "Listing you requested does not exist.");
         return res.redirect("/listing");
     }
 
-    res.render("listings/edit.ejs", { listings, categories: CATEGORY_OPTIONS });
+    res.render("listings/edit.ejs", { listings, categories: CATEGORY_OPTIONS, csrfToken: req.csrfToken() });
 };
 
 module.exports.updateListing = async (req, res) => {
@@ -204,13 +209,13 @@ module.exports.updateListing = async (req, res) => {
         }
     }
 
-    req.flash("success", " Listing Updated!");
+    req.flash("success", "Listing Updated!");
     res.redirect(`/listing/${id}`);
 };
 
 module.exports.destroyListing = async (req, res) => {
     const { id } = req.params;
     await Listing.findByIdAndDelete(id);
-    req.flash("success", " Listing Deleted!");
+    req.flash("success", "Listing Deleted!");
     res.redirect("/listing");
 };
