@@ -41,3 +41,5 @@ Basic route tests are in `__tests__/`. Add more API and model tests as you grow 
 ## Notes
 - Do not commit real secrets in `.env` (Cloudinary keys, session secret, etc.).
 - If you deploy behind a proxy (Render/Railway/Nginx), keep `NODE_ENV=production` to enable secure cookies.
+## Live Demo
+[Live demo](wonderlust-7b97.onrender.com/)
